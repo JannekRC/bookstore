@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.example.bookstore.domain.Book;
 import com.example.bookstore.domain.BookRepository;
 import com.example.bookstore.domain.CategoryRepository;
+import com.example.bookstore.domain.UserRepository;
 
 @Controller
 public class BookController {
@@ -23,6 +25,9 @@ public class BookController {
 	
 	@Autowired
 	private CategoryRepository crepository;
+	
+	@Autowired
+	private UserRepository urepository;
 
 	@RequestMapping(value = "/index")
 	public String showIndex(Model model) {
@@ -30,10 +35,16 @@ public class BookController {
 		return "form";
 	}
 
-	@RequestMapping(value = { "/", "/booklist" })
+	@RequestMapping(value = { "/booklist" })
 	public String bookList(Model model) {
 		model.addAttribute("books", repository.findAll());
 		return "booklist";
+	}
+	
+	@RequestMapping(value = { "/", "/login" })
+	public String login(Model model) {
+		model.addAttribute("users", urepository.findAll());
+		return "login";
 	}
 	
 	// RESTful service to get all books
@@ -55,6 +66,7 @@ public class BookController {
 		return "addbook";
 	}
 
+	@PreAuthorize("hasAuthority('ADMIN')")
 	@GetMapping("/delete/{id}")
 	public String deleteBook(@PathVariable("id") Long bookId, Model model) {
 		repository.deleteById(bookId);
